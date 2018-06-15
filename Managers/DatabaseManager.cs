@@ -8,26 +8,26 @@ namespace Sykoo.Managers
     {
         static readonly object fileLock = new object();
 
-        private static string GetDatabasePath(string guildId)
+        private string GetDatabasePath(string guildId)
         {
             if (!Directory.Exists(Path.Combine(Directory.GetCurrentDirectory(), "database", guildId)))
                 Directory.CreateDirectory(Path.Combine(Directory.GetCurrentDirectory(), "database", guildId));
             return Path.Combine(Directory.GetCurrentDirectory(), "database", guildId);
         }
 
-        public static GuildSettings GetGuildSettings(string guildId)
+        public  GuildSettings GetGuildSettings(string guildId)
             => JsonConvert.DeserializeObject<GuildSettings>(File.ReadAllText(Path.Combine(GetDatabasePath(guildId), "settings.json")));
 
-        public static void SaveGuildSettings(string guildId, GuildSettings settings)
+        public  void SaveGuildSettings(string guildId, GuildSettings settings)
             => WriteFile(Path.Combine(GetDatabasePath(guildId), "settings.json"), JsonConvert.SerializeObject(settings));
 
-        public static ConfigModel GetConfig()
+        public  ConfigModel GetConfig()
             => JsonConvert.DeserializeObject<ConfigModel>(File.ReadAllText(Path.Combine(Directory.GetCurrentDirectory(), "database", "config.json")));
 
-        public static void SaveConfig(ConfigModel config)
+        public  void SaveConfig(ConfigModel config)
             => WriteFile(Path.Combine(Directory.GetCurrentDirectory(), "database", "config.json"), JsonConvert.SerializeObject(config));
 
-        static void WriteFile(string path, string data)
+        private void WriteFile(string path, string data)
         {
             lock (fileLock)
             {

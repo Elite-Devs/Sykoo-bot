@@ -7,9 +7,13 @@ namespace Sykoo.Handlers
 {
     public class ConfigHandler
     {
+        DatabaseManager DBMan { get; }
+
+        public ConfigHandler(DatabaseManager manager) => DBMan = manager;
+
         public ConfigModel Config
         {
-            get => DatabaseManager.GetConfig();
+            get => DBMan.GetConfig();
         }
 
         public void CheckConfig()
@@ -17,7 +21,7 @@ namespace Sykoo.Handlers
             if (File.Exists(Path.Combine(Directory.GetCurrentDirectory(), "database", "config.json"))) return;
             Console.Write("Enter token: ");
             string token = Console.ReadLine();
-            DatabaseManager.SaveConfig(new ConfigModel
+            DBMan.SaveConfig(new ConfigModel
             {
                 Token = token,
                 Prefix = "s!"
@@ -25,6 +29,6 @@ namespace Sykoo.Handlers
         }
 
         public void Save(ConfigModel config)
-            => DatabaseManager.SaveConfig(config);
+            => DBMan.SaveConfig(config);
     }
 }
