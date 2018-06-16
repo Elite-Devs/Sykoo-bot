@@ -4,9 +4,8 @@ namespace Sykoo.Models
 {
     public class ConfigModel
     {
-        [JsonProperty("token")]
+        public string Id { get; set; }
         public string Token { get; set; }
-        [JsonProperty("prefix")]
         public string Prefix { get; set; }
     }
 }

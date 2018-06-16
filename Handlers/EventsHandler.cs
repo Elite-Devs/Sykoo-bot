@@ -10,20 +10,24 @@ namespace Sykoo.Handlers
 {
     public class EventsHandler
     {
+        GuildHandler GuildHandler { get; }
         DiscordSocketClient Client { get; }
+        ConfigHandler ConfigHandler { get; }
         IServiceProvider ServiceProvider { get; set; }
         CommandService CommandService { get; }
 
-        public EventsHandler(DiscordSocketClient client)
+        public EventsHandler(GuildHandler guildHandler, ConfigHandler configHandler, DiscordSocketClient client, CommandService commandService)
         {
             Client = client;
+            GuildHandler = guildHandler;
+            ConfigHandler = configHandler;
+            CommandService = commandService;
         }
 
         public async Task InitializeAsync(IServiceProvider serviceProvider)
         {
             ServiceProvider = serviceProvider;
-            // Null reference exception? 何で？
-            //await CommandService.AddModulesAsync(Assembly.GetEntryAssembly(), serviceProvider);
+            await CommandService.AddModulesAsync(Assembly.GetEntryAssembly(), serviceProvider);
         }
 
         internal Task Ready()
@@ -55,15 +59,32 @@ namespace Sykoo.Handlers
             int argPos = 0;
             var context = new IContext(Client, userMessage, ServiceProvider);
             if (!userMessage.HasStringPrefix(context.Config.Prefix, ref argPos)) return;
-            // another one え？
-            //var result = await CommandService.ExecuteAsync(context, argPos, ServiceProvider, MultiMatchHandling.Best);
-            /*switch (result.Error)
+            var result = await CommandService.ExecuteAsync(context, argPos, ServiceProvider, MultiMatchHandling.Best);
+            switch (result.Error)
             {
                 case CommandError.Exception:
                     Console.WriteLine($"Exception: {result.ErrorReason}");
                     break;
-            }*/
+            }
             Console.WriteLine("Got through the command checks");
+        }
+
+        internal Task LeftGuild(SocketGuild guild)
+        {
+            GuildHandler.RemoveGuild(guild.Id, guild.Name);
+            return Task.CompletedTask;
+        }
+
+        internal Task GuildAvailable(SocketGuild guild)
+        {
+            GuildHandler.AddGuild(guild.Id, guild.Name);
+            return Task.CompletedTask;
+        }
+
+        internal Task JoinedGuild(SocketGuild guild)
+        {
+            GuildHandler.AddGuild(guild.Id, guild.Name);
+            return Task.CompletedTask;
         }
     }
 }

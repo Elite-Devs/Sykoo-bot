@@ -2,9 +2,9 @@ using Newtonsoft.Json;
 
 namespace Sykoo.Models
 {
-    public class GuildSettings
+    public class GuildModel
     {
-        [JsonProperty("single_message_channel")]
+        public string Id { get; set; }
         public ulong SingleMessageChannel { get; set; }
     }
 }

@@ -1,4 +1,4 @@
-using Sykoo.Managers;
+using Raven.Client.Documents;
 using Sykoo.Models;
 using System;
 using System.IO;
@@ -7,28 +7,45 @@ namespace Sykoo.Handlers
 {
     public class ConfigHandler
     {
-        DatabaseManager DBMan { get; }
+        IDocumentStore Store { get; }
 
-        public ConfigHandler(DatabaseManager manager) => DBMan = manager;
+        public ConfigHandler(IDocumentStore store) => Store = store;
 
         public ConfigModel Config
         {
-            get => DBMan.GetConfig();
+            get
+            {
+                using (var session = Store.OpenSession())
+                    return session.Load<ConfigModel>("Config");
+            }
         }
 
         public void CheckConfig()
         {
-            if (File.Exists(Path.Combine(Directory.GetCurrentDirectory(), "database", "config.json"))) return;
-            Console.Write("Enter token: ");
-            string token = Console.ReadLine();
-            DBMan.SaveConfig(new ConfigModel
+            using (var session = Store.OpenSession())
             {
-                Token = token,
-                Prefix = "s!"
-            });
+                if (session.Advanced.Exists("Config")) return;
+                Console.Write("Enter token: ");
+                string token = Console.ReadLine();
+                session.Store(new ConfigModel
+                {
+                    Id = "Config",
+                    Token = token,
+                    Prefix = "s!"
+                });
+                session.SaveChanges();
+            }
         }
 
-        public void Save(ConfigModel config)
-            => DBMan.SaveConfig(config);
+        public void Save(ConfigModel config = null)
+        {
+            config = config ?? Config;
+            if (config == null) return;
+            using (var session = Store.OpenSession())
+            {
+                session.Store(config, "Config");
+                session.SaveChanges();
+            }
+        }
     }
 }

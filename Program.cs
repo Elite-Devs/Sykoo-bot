@@ -2,8 +2,8 @@
 using Discord.Commands;
 using Discord.WebSocket;
 using Microsoft.Extensions.DependencyInjection;
+using Raven.Client.Documents;
 using Sykoo.Handlers;
-using Sykoo.Managers;
 using System;
 using System.Threading.Tasks;
 
@@ -23,10 +23,21 @@ namespace Sykoo
                     AlwaysDownloadUsers = true,
                     LogLevel = LogSeverity.Error
                 }))
-                .AddSingleton(new CommandService())
-                .AddSingleton<ConfigHandler>()
-                .AddSingleton<DatabaseManager>()
+                .AddSingleton(new CommandService(new CommandServiceConfig
+                {
+                    ThrowOnError = true,
+                    IgnoreExtraArgs = false,
+                    CaseSensitiveCommands = false,
+                    DefaultRunMode = RunMode.Async
+                }))
+                .AddSingleton(new DocumentStore
+                {
+                    Database = "Sykoo",
+                    Urls = new[] { "http://localhost:8080" }
+                }.Initialize())
                 .AddSingleton<MainHandler>()
+                .AddSingleton<GuildHandler>()
+                .AddSingleton<ConfigHandler>()
                 .AddSingleton<EventsHandler>();
 
             var provider = services.BuildServiceProvider();
